@@ -82,10 +82,10 @@ REQUEST_SAMPLE = {  # Do you want some parameters to be set in a specific way? C
 }
 
 AGENT_INIT = {  # The NETWORK class's default configuration. If you do not pass any attribute, it will default to the value defined here.
+    "NUM_NODES": 0,
     "NUM_ACTIONS": 0,
     "NUM_FEATURES": 0, 
-    "NODE_FEATURES_SHAPE": 0, 
-    "LINK_MATRIX_SHAPE": 0,
+    "LINKS_LIST": "",
     "NAME": "",
     "EPSILON": 1, # Epsilon is initialized for the epsilon-greedy technique.
     "EPSILON_MIN": 0.05, # Setting the minimum bound for Epsilon.

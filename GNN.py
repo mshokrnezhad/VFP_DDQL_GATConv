@@ -23,12 +23,9 @@ class GNN(nn.Module):
         self.optimizer = opt.Adam(self.parameters(), lr=self.INPUT["LR"])
         self.criterion = nn.MSELoss()
 
-    def forward(self, state):  # forward propagation includes defining layers
-        x = []
-        edge_index = []
-        
-        out = F.relu(self.initial_conv(x, edge_index))
-        out = F.relu(self.conv1(out, edge_index))
+    def forward(self, x, edge_index):  # forward propagation includes defining layers         
+        out = F.relu(self.initial_conv(x, edge_index=edge_index))
+        out = F.relu(self.conv1(out, edge_index=edge_index))
         
         return self.linear(out)
 

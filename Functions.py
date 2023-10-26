@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os.path
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes, mark_inset
 rnd = np.random
+import torch as T
 
 
 def read_list_from_file(dir, file_name, type, round_num=2):
@@ -90,3 +91,8 @@ def save_list_to_file(list, dir, file_name):
         else:
             f.write(str(list[i]))
     f.close()
+    
+def expand_array(array, factor):
+    expanded_array = [item.item() for item in array for _ in range(factor)]
+
+    return T.tensor(expanded_array, dtype=T.int)

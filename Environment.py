@@ -19,12 +19,11 @@ class Environment:
         self.REQ_OBJ = Request(self.REQ_INPUT)
 
     def get_state(self):
-        node_features, links_matrix, _ = self.NET_OBJ.get_state()
+        node_features, _ = self.NET_OBJ.get_state()
         # request_features = self.REQ_OBJ.get_state()
 
         env_state = {
             "NODE_FEATURES": T.tensor(node_features),
-            "LINK_MATRIX": T.tensor(links_matrix),
             # "LINK_FEATURES": T.tensor(link_features),
             # "REQUEST_FEATURES": T.tensor(request_features)
         }

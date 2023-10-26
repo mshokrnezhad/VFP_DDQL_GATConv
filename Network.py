@@ -231,7 +231,7 @@ class Network:
                 if k not in [0]:
                     link_features[(i, j)].append(self.LINK_DELAYS[link_index][k])
 
-        return node_features, self.LINKS_MATRIX, link_features
+        return node_features, link_features
 
     def update_state(self, action={}):  # It updates the network state after receiving an action from a request.
         node = action["node"] if "node" in action.keys() else ""
