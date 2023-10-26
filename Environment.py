@@ -2,7 +2,7 @@ from Network import Network
 from Request import Request
 from Service import Service
 import numpy as np
-from Functions import parse_state
+import torch as T
 
 
 
@@ -19,14 +19,14 @@ class Environment:
         self.REQ_OBJ = Request(self.REQ_INPUT)
 
     def get_state(self):
-        node_features, links_matrix, link_features = self.NET_OBJ.get_state()
-        request_features = self.REQ_OBJ.get_state()
+        node_features, links_matrix, _ = self.NET_OBJ.get_state()
+        # request_features = self.REQ_OBJ.get_state()
 
         env_state = {
-            "NODE_FEATURES": node_features,
-            "LINK_MATRIX": links_matrix,
-            "LINK_FEATURES": link_features,
-            "REQUEST_FEATURES": request_features
+            "NODE_FEATURES": T.tensor(node_features),
+            "LINK_MATRIX": T.tensor(links_matrix),
+            # "LINK_FEATURES": T.tensor(link_features),
+            # "REQUEST_FEATURES": T.tensor(request_features)
         }
 
         return env_state
@@ -67,8 +67,7 @@ class Environment:
             }
             self.update_state(_action)
 
-        parsed_resulted_state = parse_state(self.NET_OBJ.NUM_NODES, self.get_state(), self.NET_OBJ)
-
+        parsed_resulted_state = self.get_state()
 
         return parsed_resulted_state, round(reward, 3), result["done"], result["info"], result["OF"], result["delay"]
 

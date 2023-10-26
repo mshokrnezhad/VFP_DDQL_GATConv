@@ -16,8 +16,12 @@ SEEDS = read_list_from_file("inputs/", "SEEDS_100.txt", "int")
 FILE_NAME = "V" + str(NUM_NODES) + "_K" + str(NUM_PRIORITY_LEVELS) + "_R" + str(NUM_REQUESTS) + "_S" + str(NUM_SERVICES) + "_G" + str(NUM_GAMES)
 
 ENV_OBJ = Environment({"NET": {"SAMPLE": "NET3"}, "REQ": {"NUM_REQUESTS": NUM_REQUESTS}, "SRV": {"SAMPLE": "SRVSET2"}})
-parsed_state = parse_state(NUM_NODES, ENV_OBJ.get_state(), ENV_OBJ.NET_OBJ)
-AGN_OBJ = Agent({"NUM_ACTIONS": NUM_NODES, "INPUT_SHAPE": parsed_state.size, "NAME": FILE_NAME})
+
+state = ENV_OBJ.get_state()
+NUM_FEATURES = state["NODE_FEATURES"].shape[1]
+NODE_FEATURES_SHAPE = state["NODE_FEATURES"].shape
+LINK_MATRIX_SHAPE = state["LINK_MATRIX"].shape
+AGN_OBJ = Agent({"NUM_ACTIONS": NUM_NODES, "NUM_FEATURES": NUM_FEATURES, "NODE_FEATURES_SHAPE": NODE_FEATURES_SHAPE, "LINK_MATRIX_SHAPE": LINK_MATRIX_SHAPE,  "NAME": FILE_NAME})
 
 bst_rwd = -np.inf
 game_stps = 0
@@ -27,7 +31,7 @@ for i in range(NUM_GAMES):
     SEED = SEEDS[i]
     ENV_OBJ.reset(SEED)
     BASE_DC_CAPACITIES = copy.deepcopy(ENV_OBJ.NET_OBJ.DC_CAPACITIES)
-    state = parse_state(NUM_NODES, ENV_OBJ.get_state(), ENV_OBJ.NET_OBJ)
+    state = ENV_OBJ.get_state()
     game_rwd = 0
     game_reqs = 0
     game_of = 0

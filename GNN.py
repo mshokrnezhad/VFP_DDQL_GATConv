@@ -4,39 +4,33 @@ import torch.optim as opt
 import torch as T
 import os
 import numpy as np
+from torch_geometric.nn import GATConv
+from torch.nn import Linear
 
 
-class DNN(nn.Module):
+class GNN(nn.Module):
     def __init__(self, INPUT):
-        super().__init__()
+        super(GNN, self).__init__()
         # Building INPUT
         self.INPUT = INPUT
         # Defining base variables
         self.CHECKPOINT_DIR = self.INPUT["CHECKPOINT_DIR"]
         self.CHECKPOINT_FILE = os.path.join(self.CHECKPOINT_DIR, self.INPUT["NAME"])
-        self.NUM_LAYERS = self.INPUT["NUM_LAYERS"]
-        self.SIZE_LAYERS = self.INPUT["SIZE_LAYERS"]
-        self.fc = self.generate_layers_v01()
+        self.SIZE_LAYERS = self.INPUT["SIZE_LAYERS"]  
+        self.initial_conv = GATConv(self.SIZE_LAYERS[0], self.SIZE_LAYERS[1])
+        self.conv1 = GATConv(self.SIZE_LAYERS[1],self.SIZE_LAYERS[2])
+        self.linear = Linear(self.SIZE_LAYERS[2], self.SIZE_LAYERS[3])
         self.optimizer = opt.Adam(self.parameters(), lr=self.INPUT["LR"])
         self.criterion = nn.MSELoss()
 
-    def generate_layers_v01(self):
-        fc = nn.ModuleList()
-
-        for l in range(self.NUM_LAYERS+1):
-            fc.append(nn.Linear(self.SIZE_LAYERS[l], self.SIZE_LAYERS[l+1]))
-
-        return fc
-
     def forward(self, state):  # forward propagation includes defining layers
-        out = []
-
-        out.append(F.relu(self.fc[0](state)))
-        for l in range(1, self.NUM_LAYERS):
-            out.append(F.relu(self.fc[l](out[l-1])))
-        out.append(self.fc[-1](out[self.NUM_LAYERS-1]))
-
-        return out[-1]
+        x = []
+        edge_index = []
+        
+        out = F.relu(self.initial_conv(x, edge_index))
+        out = F.relu(self.conv1(out, edge_index))
+        
+        return self.linear(out)
 
     def save_checkpoint(self):
         print(f'Saving {self.CHECKPOINT_FILE}...')

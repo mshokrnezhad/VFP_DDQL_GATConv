@@ -1,7 +1,7 @@
 import config
 import numpy as np
 import torch as T
-from DNN import DNN
+from GNN import GNN
 from Memory import Memory
 rnd = np.random
 AGENT_INIT = config.AGENT_INIT  # Default configs
@@ -17,7 +17,9 @@ class Agent(object):
         self.EPSILON = self.INPUT["EPSILON"]
         self.LR = self.INPUT["LR"]
         self.NUM_ACTIONS = self.INPUT["NUM_ACTIONS"]
-        self.INPUT_SHAPE = self.INPUT["INPUT_SHAPE"]
+        self.NUM_FEATURES = self.INPUT["NUM_FEATURES"]
+        self.NODE_FEATURES_SHAPE = self.INPUT["NODE_FEATURES_SHAPE"]
+        self.LINK_MATRIX_SHAPE = self.INPUT["LINK_MATRIX_SHAPE"]
         self.BATCH_SIZE = self.INPUT["BATCH_SIZE"]
         self.MEMORY_SIZE = self.INPUT["MEMORY_SIZE"]
         self.EPSILON_MIN = self.INPUT["EPSILON_MIN"]
@@ -26,36 +28,36 @@ class Agent(object):
         self.CHECKPOINT_DIR = self.INPUT["CHECKPOINT_DIR"]
         self.ACTION_SPACE = [i for i in range(self.NUM_ACTIONS)]
         self.learning_counter = 0
-        self.memory = Memory(MAX_SIZE=self.MEMORY_SIZE, INPUT_SHAPE=self.INPUT_SHAPE)
-        self.q_eval = DNN(self.generate_q_inputs("_q_eval"))
-        self.q_next = DNN(self.generate_q_inputs("_q_next"))
+        self.memory = Memory(MAX_SIZE=self.MEMORY_SIZE, NODE_FEATURES_SHAPE=self.NODE_FEATURES_SHAPE, LINK_MATRIX_SHAPE=self.LINK_MATRIX_SHAPE)
+        self.q_eval = GNN(self.generate_q_inputs("_q_eval"))
+        self.q_next = GNN(self.generate_q_inputs("_q_next"))
 
     def generate_q_inputs(self, local_name):
-        NUM_LAYERS = 4
-        SIZE_LAYERS = [self.INPUT_SHAPE, 256, 128, 64, 32, self.NUM_ACTIONS]
+        SIZE_LAYERS = [self.NUM_FEATURES, self.NUM_FEATURES, self.NUM_FEATURES, self.NUM_ACTIONS]
 
         INPUT = {
             "LR": self.LR,
             "NAME": self.NAME + local_name,
             "CHECKPOINT_DIR": self.CHECKPOINT_DIR,
-            "NUM_LAYERS": NUM_LAYERS,
             "SIZE_LAYERS": SIZE_LAYERS
         }
-        
+
         return INPUT
 
     def store_transition(self, state, action, reward, resulted_state, done):
         self.memory.store_transition(state, action, reward, resulted_state, done)
 
     def sample_memory(self):
-        states, actions, rewards, resulted_states, dones = self.memory.sample_buffer(self.BATCH_SIZE)
-        states = T.tensor(states)
+        states_node_features, states_link_matrix, actions, rewards, resluted_states_node_features, resluted_states_link_matrix, dones = self.memory.sample_buffer(self.BATCH_SIZE)
+        states_node_features = T.tensor(states_node_features)
+        states_link_matrix = T.tensor(states_link_matrix)
         rewards = T.tensor(rewards)
         actions = T.tensor(actions)
-        resulted_states = T.tensor(resulted_states)
+        resluted_states_node_features = T.tensor(resluted_states_node_features)
+        resluted_states_link_matrix = T.tensor(resluted_states_link_matrix)
         dones = T.tensor(dones)
 
-        return states, actions, rewards, resulted_states, dones
+        return states_node_features, states_link_matrix, actions, rewards, resluted_states_node_features, resluted_states_link_matrix, dones
 
     def choose_action(self, state, SEED, train_mode=True):
         rnd.seed(SEED)
@@ -93,12 +95,12 @@ class Agent(object):
 
         self.q_eval.optimizer.zero_grad()
         self.replace_target_network()
-        states, actions, rewards, resulted_states, dones = self.sample_memory()
+        states_node_features, states_link_matrix, actions, rewards, resluted_states_node_features, resluted_states_link_matrix, dones    = self.sample_memory()
         indexes = np.arange(self.BATCH_SIZE)
 
-        q_pred = self.q_eval.forward(states)[indexes, actions]  # dims: batch_size * n_actions
-        q_next = self.q_next.forward(resulted_states)
-        q_eval = self.q_eval.forward(resulted_states)
+        q_pred = self.q_eval.forward(states_node_features, states_link_matrix)[indexes, actions]  # dims: batch_size * n_actions
+        q_next = self.q_next.forward(resluted_states_node_features, resluted_states_link_matrix)
+        q_eval = self.q_eval.forward(resluted_states_node_features, resluted_states_link_matrix)
 
         max_actions = T.argmax(q_eval, dim=1)
         q_next[dones] = 0.0
