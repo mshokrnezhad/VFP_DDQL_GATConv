@@ -26,7 +26,6 @@ class GNN(nn.Module):
     def forward(self, x, edge_index):  # forward propagation includes defining layers         
         out = F.relu(self.initial_conv(x, edge_index=edge_index))
         out = F.relu(self.conv1(out, edge_index=edge_index))
-        
         return self.linear(out)
 
     def save_checkpoint(self):

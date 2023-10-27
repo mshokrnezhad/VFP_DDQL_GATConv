@@ -10,7 +10,7 @@ NUM_PRIORITY_LEVELS = 1
 NUM_SERVICES = 1
 NUM_NODES = 3
 NUM_REQUESTS = 1
-NUM_GAMES = 10000
+NUM_GAMES = 50000
 
 SEEDS = read_list_from_file("inputs/", "SEEDS_100.txt", "int")
 FILE_NAME = "V" + str(NUM_NODES) + "_K" + str(NUM_PRIORITY_LEVELS) + "_R" + str(NUM_REQUESTS) + "_S" + str(NUM_SERVICES) + "_G" + str(NUM_GAMES)
@@ -47,11 +47,9 @@ for i in range(NUM_GAMES):
         game_stps += 1
 
         AGN_OBJ.store_transition(state, a["node_id"], req_rwd, resulted_state, int(done))
-        AGN_OBJ.learn()
+        AGN_OBJ.batch_learn()
 
         state = resulted_state
-
-        # print(a["node_id"], game_reqs, game_rwd)
 
     rwds.append(game_rwd)
     stps.append(game_stps)
@@ -63,6 +61,7 @@ for i in range(NUM_GAMES):
     game_dc_var = np.var(100 * (ENV_OBJ.NET_OBJ.DC_CAPACITIES / BASE_DC_CAPACITIES))
     dc_vars.append(game_dc_var)
     epss.append(AGN_OBJ.EPSILON)
+    avg_game_rwd = 0 if game_rwd == 0 else game_rwd / game_reqs
 
     avg_rwd = np.mean(rwds[-100:])
     if avg_rwd > bst_rwd:
@@ -71,21 +70,21 @@ for i in range(NUM_GAMES):
 
     print(
         'episode:', i,
-        'cost: %.2f' % avg_game_of,
+        'cost:' f'{avg_game_of:15f}',
         'reqs: %.0f' % game_reqs,
         # 'delay: %.2f' % avg_game_dly,
         # 'dc_var: %.2f' % game_dc_var,
-        'reward: %.2f' % bst_rwd,
+        'reward:' f'{avg_game_rwd:15f}',
         'eps: %.4f' % AGN_OBJ.EPSILON,
         'steps:', game_stps
     )
 
-    _suffix = ""
-    _file_name = str("d_" + FILE_NAME + "_ml" + _suffix)
-    _address = str("results/" + FILE_NAME + "/")
-    save_list_to_file(reqs, _address, _file_name + "_reqs")
-    save_list_to_file(avg_ofs, _address, _file_name + "_avg_ofs")
-    save_list_to_file(rwds, _address, _file_name + "_rwds")
-    save_list_to_file(epss, _address, _file_name + "_epss")
-    save_list_to_file(avg_dlys, _address, _file_name + "_avg_dlys")
-    save_list_to_file(dc_vars, _address, _file_name + "_dc_vars")
+    # _suffix = ""
+    # _file_name = str("d_" + FILE_NAME + "_ml" + _suffix)
+    # _address = str("results/" + FILE_NAME + "/")
+    # save_list_to_file(reqs, _address, _file_name + "_reqs")
+    # save_list_to_file(avg_ofs, _address, _file_name + "_avg_ofs")
+    # save_list_to_file(rwds, _address, _file_name + "_rwds")
+    # save_list_to_file(epss, _address, _file_name + "_epss")
+    # save_list_to_file(avg_dlys, _address, _file_name + "_avg_dlys")
+    # save_list_to_file(dc_vars, _address, _file_name + "_dc_vars")

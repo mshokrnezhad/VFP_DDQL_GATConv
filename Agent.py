@@ -99,7 +99,7 @@ class Agent(object):
 
         return edge_index
     
-    def learn(self):
+    def batch_learn(self):
         if self.memory.counter < self.BATCH_SIZE:
             return
 
@@ -132,6 +132,31 @@ class Agent(object):
 
         self.learning_counter += 1
         self.decrement_epsilon()
+
+    def temporal_learn(self, _state, action, reward, _resulted_state):
+            state = T.tensor(_state["NODE_FEATURES"], dtype=T.float)
+            resulted_state = T.tensor(_resulted_state["NODE_FEATURES"], dtype=T.float)
+            
+            self.q_eval.optimizer.zero_grad()
+            self.replace_target_network()
+            
+            _q_pred = self.q_eval.forward(state, self.edge_index)
+            q_pred = _q_pred[action]  # dims: batch_size * n_actions
+            q_next = self.q_next.forward(resulted_state, self.edge_index)
+            q_eval = self.q_eval.forward(resulted_state, self.edge_index)
+
+            max_action = T.argmax(q_eval, dim=1)
+            # q_next[dones] = 0.0
+
+            target = reward + self.GAMMA * q_next[max_action]
+
+            loss = self.q_eval.criterion(target, q_pred)
+            loss.backward()
+
+            self.q_eval.optimizer.step()
+
+            self.learning_counter += 1
+            self.decrement_epsilon()
 
     def save_models(self):
         self.q_eval.save_checkpoint()

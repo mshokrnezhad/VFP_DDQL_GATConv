@@ -89,7 +89,7 @@ AGENT_INIT = {  # The NETWORK class's default configuration. If you do not pass 
     "NAME": "",
     "EPSILON": 1, # Epsilon is initialized for the epsilon-greedy technique.
     "EPSILON_MIN": 0.05, # Setting the minimum bound for Epsilon.
-    "EPSILON_DEC": 5e-4, # Defining a reduction factor for Epsilon.
+    "EPSILON_DEC": 1e-5, # Defining a reduction factor for Epsilon.
     "GAMMA": 0.99, 
     "LR": 0.0001, # defining the learning rate
     "MEMORY_SIZE": 50000,  
