@@ -1,5 +1,5 @@
 # VFP_DDQL_GATConv
-A Virtual Function Placement (VFP) method using Double Deep Q-Learning (DDQL) powered by Graph Neural Network (GNN) layers. 
+A Virtual Function Placement (VFP) method using Double Deep Q-Learning (DDQL) powered by GATConv (a Graph Neural Network -GNN- layer)
 
 This repository implements the VNF placement agent described here (https://ieeexplore.ieee.org/abstract/document/10207694/) using GNN.
 
